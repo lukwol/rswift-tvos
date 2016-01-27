@@ -50,3 +50,12 @@ task :spec do
   device_udid = RSwift::DeviceProvider.udid_for_device(device_name, :tvos)
   exec "xcodebuild test -workspace #{workspace} -scheme #{project.app_scheme_name} -destination 'platform=appletvsimulator,id=#{device_udid}' -derivedDataPath #{DERIVED_DATA_PATH} | xcpretty -tc"
 end
+
+namespace :simulator do
+
+  desc 'Clean all simulators'
+  task :clean do
+    system 'killall Simulator'
+    system 'xcrun simctl erase all'
+  end
+end
