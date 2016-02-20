@@ -29,7 +29,7 @@ end
 desc 'Run the simulator'
 task :simulator => [:build] do
   system "xcrun instruments -w #{device_udid}"
-  system "xcrun simctl install booted #{DERIVED_DATA_PATH}/Build/Products/Debug-appletvsimulator/#{project.app_target.product_name}.app"
+  system "xcrun simctl install booted #{DERIVED_DATA_PATH}/Build/Products/#{project.debug_build_configuration.name}-appletvsimulator/#{project.app_target.product_name}.app"
   system "xcrun simctl launch booted #{project.app_target.debug_product_bundle_identifier}"
   if debug.to_i.nonzero?
     exec "lldb -n #{project.app_target.product_name}"
