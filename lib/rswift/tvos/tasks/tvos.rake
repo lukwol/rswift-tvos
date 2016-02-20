@@ -5,15 +5,18 @@ DERIVED_DATA_PATH = 'build'
 DEFAULT_DEVICE_NAME = 'Apple TV 1080p'
 DEBUG_ENV_KEY = 'debug'
 
+device_name = DEFAULT_DEVICE_NAME
+debug = ENV[DEBUG_ENV_KEY]
+debug ||= '0'
+
+workspace = RSwift::WorkspaceProvider.workspace
+project = Xcodeproj::Project.open(Dir.glob('*.xcodeproj').first)
+device_udid = RSwift::DeviceProvider.udid_for_device(device_name, :tvos)
+
 task :default => :simulator
 
 desc 'Build workspace'
 task :build do
-  device_name = DEFAULT_DEVICE_NAME
-  workspace = RSwift::WorkspaceProvider.workspace
-  project_path = Dir.glob('*.xcodeproj').first
-  project = Xcodeproj::Project.open(project_path)
-  device_udid = RSwift::DeviceProvider.udid_for_device(device_name, :tvos)
   output = ""
   IO.popen("xcodebuild -workspace #{workspace} -scheme #{project.app_scheme_name} -destination 'platform=appletvsimulator,id=#{device_udid}' -derivedDataPath #{DERIVED_DATA_PATH} | xcpretty").each do |line|
     puts line.chomp
@@ -25,12 +28,6 @@ end
 
 desc 'Run the simulator'
 task :simulator => [:build] do
-  device_name = DEFAULT_DEVICE_NAME
-  debug = ENV[DEBUG_ENV_KEY]
-  debug ||= '0'
-  project_path = Dir.glob('*.xcodeproj').first
-  project = Xcodeproj::Project.open(project_path)
-  device_udid = RSwift::DeviceProvider.udid_for_device(device_name, :tvos)
   system "xcrun instruments -w #{device_udid}"
   system "xcrun simctl install booted #{DERIVED_DATA_PATH}/Build/Products/Debug-appletvsimulator/#{project.app_target.product_name}.app"
   system "xcrun simctl launch booted #{project.app_target.debug_product_bundle_identifier}"
@@ -43,11 +40,6 @@ end
 
 desc 'Run the test/spec suite on the simulator'
 task :spec do
-  device_name = DEFAULT_DEVICE_NAME
-  workspace = RSwift::WorkspaceProvider.workspace
-  project_path = Dir.glob('*.xcodeproj').first
-  project = Xcodeproj::Project.open(project_path)
-  device_udid = RSwift::DeviceProvider.udid_for_device(device_name, :tvos)
   exec "xcodebuild test -workspace #{workspace} -scheme #{project.app_scheme_name} -destination 'platform=appletvsimulator,id=#{device_udid}' -derivedDataPath #{DERIVED_DATA_PATH} | xcpretty -tc"
 end
 
