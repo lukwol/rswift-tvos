@@ -20,7 +20,7 @@ task :build do
   output = ""
   IO.popen("xcodebuild -workspace #{workspace} -scheme #{project.app_scheme_name} -destination 'platform=appletvsimulator,id=#{device_udid}' -derivedDataPath #{DERIVED_DATA_PATH} | xcpretty").each do |line|
     puts line.chomp
-    output << line.chomp
+    output = line.chomp
   end
   success = output.include? "Build Succeeded"
   abort unless success
